@@ -1,0 +1,16 @@
+{
+  "name": "scarcity-backend",
+  "main": "src/server/worker.ts",
+  "compatibility_date": "2025-01-01",
+  "dev": {
+    "port": 8787
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOMS", "class_name": "RoomDurableObject" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["RoomDurableObject"] }
+  ]
+}

@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto';
-import { WebSocket } from 'ws';
 import { GameEngine } from '../GameEngine';
 import { GameConfig, DEFAULT_STARTING_RESOURCES, GameState } from '../types';
 import { ServerMessage } from './protocol';
@@ -39,10 +37,10 @@ export class Room {
   handleConnection(socket: WebSocket): void {
     let boundSeat: Seat | null = null;
 
-    socket.on('message', (data) => {
+    socket.addEventListener('message', (event) => {
       let msg: WebClientMessage;
       try {
-        msg = JSON.parse(data.toString());
+        msg = JSON.parse(event.data.toString());
       } catch {
         this.sendTo(socket, { type: 'error', message: 'Malformed message' });
         return;
@@ -62,7 +60,7 @@ export class Room {
       this.handleBoundMessage(boundSeat, msg);
     });
 
-    socket.on('close', () => {
+    socket.addEventListener('close', () => {
       if (boundSeat && boundSeat.socket === socket) {
         boundSeat.socket = null;
         this.broadcastRoomState();
@@ -84,7 +82,7 @@ export class Room {
     }
     seat.playerId = `player_${seat.index}`;
     seat.name = name;
-    seat.rejoinToken = randomUUID();
+    seat.rejoinToken = crypto.randomUUID();
     seat.socket = socket;
     this.sendTo(socket, { type: 'joined', seatIndex: seat.index, playerId: seat.playerId, rejoinToken: seat.rejoinToken });
     this.broadcastRoomState();
@@ -284,7 +282,7 @@ export class Room {
   // ── Wire helpers ───────────────────────────────────────────────────────────
 
   private sendTo(socket: WebSocket, msg: WebServerMessage): void {
-    if (socket.readyState !== socket.OPEN) return;
+    if (socket.readyState !== 1 /* OPEN */) return;
     socket.send(JSON.stringify(msg));
   }
 

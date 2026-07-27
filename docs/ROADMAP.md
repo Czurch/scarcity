@@ -12,7 +12,8 @@
 - [x] Verbose game logging for pattern analysis
 - [x] Human vs RL agent play (`npm run play` + `python connect_as_agent.py`)
 - [x] Planning phase: pre-round sustenance allocation + equipment management before action selection
-- [x] Web frontend (React + Vite) + multi-human web server (`gameBackend/src/server/room.ts`, `web-server.ts`) — friends join a lobby, claim seats, and play a full game over WebSocket; reconnect via per-seat token
+- [x] Web frontend (React + Vite) + multi-human backend (`gameBackend/src/server/room.ts`, `roomDurableObject.ts`, `worker.ts`) — friends join a lobby via a generated code, claim seats, and play a full game over WebSocket; reconnect via per-seat token
+- [x] Both frontend and backend deployed to Cloudflare (Workers static assets + Workers/Durable Objects), auto-deployed on push to `main`
 - [ ] Passive abilities (stubs only — mechanics not implemented)
 - [ ] Crafting (action declared but not resolved)
 - [ ] Trading (stub)
@@ -44,22 +45,24 @@
 ## Web Frontend (Friends Playing Together)
 
 **How it works:**
-- `npm run web-server` (from gameBackend/) hosts one or more rooms over WebSocket (`--port=8080 --max-players=4`)
-- `npm run dev` (from frontend/) serves the React client; each friend opens it in a browser, enters the host's address + their name, and joins the lobby
-- Host declares the seat count when the room is created; friends claim seats in any order; host clicks Start once ≥2 have joined — unfilled seats become CPU
+- Both frontend and backend are hosted on Cloudflare (Workers static assets + Workers/Durable Objects respectively), each auto-deployed from this repo's `main` branch — no self-hosting required
+- A friend hosting a game clicks "Host new game"; the backend generates a short lobby code (`POST /api/rooms`) and the host shares it
+- Friends open the site, enter the code + their name, and join the lobby; the host declares seats implicitly (default 4) and clicks Start once ≥2 have joined — unfilled seats become CPU
 - If a connection drops, reopening the page resumes the same seat via a rejoin token stored in `localStorage`
-- Hosting for friends over the internet (port-forward, ngrok, Tailscale, etc.) is the host's own responsibility — not automated
+- Local dev: `npm run dev` at the repo root runs the Vite frontend + `wrangler dev` (real Workers runtime, Durable Objects included) together
 
 **Files added:**
 - `gameBackend/src/server/webProtocol.ts` — lobby message types + human-facing additions (reuses `protocol.ts` for in-game messages)
-- `gameBackend/src/server/room.ts` — `Room`: lobby/seat-claiming + event-driven multi-human game loop
-- `gameBackend/src/server/web-server.ts` — entry point, `Map<roomId, Room>`
+- `gameBackend/src/server/room.ts` — `Room`: lobby/seat-claiming + event-driven multi-human game loop (standard `WebSocket` API, runtime-agnostic)
+- `gameBackend/src/server/roomDurableObject.ts` — `RoomDurableObject`, one per room, wraps a `Room`
+- `gameBackend/src/server/worker.ts` — Worker entry point: lobby-code generation + routing WS connections to the right Durable Object
 - `frontend/` — React + Vite + TS app; shares `gameBackend/src` types via a Vite path alias (`@game/*`), no monorepo restructuring
 
 **Known gaps / next iterations:**
 - Visual layout is a first functional pass based on the rough sketchup mockup (`frontend/assets/sketchup/`) — expected to need several rounds of styling iteration
 - No art yet for `pipe_gun`, `rifle`, or the `wood` resource (placeholders render as text fallback in `frontend/src/data/itemArt.ts`)
 - Passive abilities / crafting resolution / trading / random events have no frontend UI since the engine doesn't implement them yet (see Game Features Backlog below)
+- No UI yet to choose a custom seat count when hosting (always defaults to 4)
 
 ---
 

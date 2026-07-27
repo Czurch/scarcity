@@ -1,6 +1,5 @@
 import { WeaponId, EquipmentId, StructureId, ResourceType } from '../types';
-import * as fs from 'fs';
-import * as path from 'path';
+import itemsJsonData from './item-defs.json';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Item definitions — edit src/data/item-defs.json to add, change, or remove items.
@@ -42,9 +41,7 @@ interface ItemsJson {
   structures: Array<StructureDef & { craftCost?: Record<string, number> }>;
 }
 
-const itemsJson: ItemsJson = JSON.parse(
-  fs.readFileSync(path.join(__dirname, 'item-defs.json'), 'utf-8'),
-);
+const itemsJson = itemsJsonData as ItemsJson;
 
 export const WEAPON_DEFS: Record<WeaponId, WeaponDef> = Object.fromEntries(
   itemsJson.weapons.map((w) => [w.id, w]),

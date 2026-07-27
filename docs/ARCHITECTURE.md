@@ -38,8 +38,9 @@ TypeScript + ts-node. All game logic lives here.
 | `src/server/transports/stdio.ts` | STDIN/STDOUT implementation (used for RL training) |
 | `src/server/transports/websocket.ts` | Single-peer `WebSocketTransport implements Transport` (used for RL agent seats) |
 | `src/server/session.ts` | Serial game loop for RL training — drives engine, pauses at agent seats, routes via Transport |
-| `src/server/room.ts` | `Room` — lobby/seat-claiming + event-driven multi-human game loop (broadcasts state, fans out `*_request` to every pending seat) for the web server |
-| `src/server/web-server.ts` | Entry point for hosting friends over WebSocket (`npm run web-server`) — holds a `Map<roomId, Room>` |
+| `src/server/room.ts` | `Room` — lobby/seat-claiming + event-driven multi-human game loop (broadcasts state, fans out `*_request` to every pending seat); one `Room` instance per Durable Object |
+| `src/server/roomDurableObject.ts` | `RoomDurableObject` — Cloudflare Durable Object wrapping a `Room`; handles the WebSocket upgrade for its room |
+| `src/server/worker.ts` | Cloudflare Worker entry point (`npm run worker:dev` / `worker:deploy`) — `POST /api/rooms` generates a lobby code; WebSocket connections route to the matching Durable Object via `env.ROOMS.idFromName(roomId)` |
 | `src/server/index.ts` | Entry point for the RL training match server (stdio) |
 | `src/cli/` | Interactive CLI for human play (separate from the server) |
 
@@ -91,19 +92,24 @@ RL Agent (Python)  ── WebSocketTransport ──┘
 ### Human Play — Web (friends over the network)
 
 ```
+Browser Client (frontend/, React) ──HTTP POST /api/rooms──→ worker.ts (generates lobby code)
 Browser Client (frontend/, React)
-  └── WebSocket ──────────────────────→ web-server.ts → Room → GameEngine
+  └── WebSocket ?room=<code> ─────────→ worker.ts → env.ROOMS.idFromName(code) → RoomDurableObject → Room → GameEngine
 Browser Client (friend 2..N)
-  └── WebSocket ──────────────────────→ (same Room)
+  └── WebSocket ?room=<code> ─────────→ (same Durable Object / same Room)
 ```
 
-`web-server.ts` hosts one or more `Room`s. Each `Room` runs a lobby (seat claiming, rejoin tokens) and, once started, an **event-driven** loop: after every mutation it broadcasts full state to every connected seat and sends `*_request` to whichever human seats are currently pending (possibly several at once, e.g. during `action_selection`). This differs from `session.ts`'s serial one-transport-at-a-time loop, which assumes exactly one counterparty — the web server has N independent sockets instead. Unfilled seats become CPU automatically (a seat absent from both `humanPlayerIndices` and `agentPlayerIndices` is CPU per the reducer).
+Both the frontend (Cloudflare Workers static assets) and the backend (`worker.ts` + Durable Objects) are hosted on Cloudflare, each as its own Workers Build project connected to this repo's `main` branch — pushing to `main` auto-deploys both. No self-hosting, port-forwarding, or tunneling required.
+
+`worker.ts` is the Worker entry point. `POST /api/rooms` generates a short lobby code and returns it; the host shares that code with friends. Any WebSocket connection carrying `?room=<code>` is routed via `env.ROOMS.idFromName(code)` to that room's `RoomDurableObject` — one Durable Object instance per room, created lazily on first connection (sized from a `maxPlayers` query param). `RoomDurableObject.fetch()` accepts the WebSocket upgrade and hands the socket to a `Room` instance.
+
+`Room` itself is transport-agnostic beyond the standard `WebSocket` API (`addEventListener`/`send`/`readyState`) — it runs a lobby (seat claiming, rejoin tokens) and, once started, an **event-driven** loop: after every mutation it broadcasts full state to every connected seat and sends `*_request` to whichever human seats are currently pending (possibly several at once, e.g. during `action_selection`). This differs from `session.ts`'s serial one-transport-at-a-time loop, which assumes exactly one counterparty — a `Room` has N independent sockets instead. Unfilled seats become CPU automatically (a seat absent from both `humanPlayerIndices` and `agentPlayerIndices` is CPU per the reducer).
 
 `frontend/` shares `gameBackend`'s `types.ts`/`protocol.ts`/`webProtocol.ts` directly via a Vite path alias (`@game/*` → `../gameBackend/src/*`), not a monorepo workspace — no type duplication, no build restructuring.
 
-Hosting a game for friends over the internet is the host's own responsibility (port-forward, ngrok, Tailscale, etc.) — not automated by this codebase.
+**Local dev:** `npm run dev` at the repo root runs the Vite dev server alongside `wrangler dev` (`gameBackend`'s `npm run worker:dev`), which runs the real Workers runtime (workerd) locally, Durable Objects included — higher-fidelity than the old ts-node server it replaced. The frontend points at it via `VITE_BACKEND_URL` (`.env.local`, defaults to `ws://localhost:8787`).
 
-All three human-play/agent paths — STDIN/STDOUT training, CLI-vs-agent, and the web server — coexist. None of them modify `session.ts`, `transport.ts`, or the CLI.
+All three human-play/agent paths — STDIN/STDOUT training, CLI-vs-agent, and the web backend — coexist. None of them modify `session.ts`, `transport.ts`, or the CLI.
 
 The protocol messages (`ServerMessage` / `AgentMessage` in `protocol.ts`) are identical over both `StdioTransport` and `WebSocketTransport`, and are reused as-is for human web clients in `webProtocol.ts`.
 

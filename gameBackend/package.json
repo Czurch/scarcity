@@ -11,17 +11,20 @@
     "sim-strats": "ts-node src/cli/index.ts --sim-strats",
     "server": "ts-node src/server/index.ts",
     "play": "ts-node src/server/play-vs-rl.ts",
-    "web-server": "ts-node src/server/web-server.ts",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
     "test": "jest"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.0.0",
     "@types/ws": "^8.18.1",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "wrangler": "^4.86.0"
   },
   "dependencies": {
     "ws": "^8.21.0"
