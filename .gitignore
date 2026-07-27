@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# RL training artifacts (large binaries / logs, not part of the web app)
+rlAgent/checkpoints/
+rlAgent/game-logs/
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Wrangler
+.wrangler/
+
+# Claude Code local state (machine-specific, not project config)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

@@ -1,0 +1,164 @@
+{
+  "weapons": [
+    {
+      "id": "wooden_club",
+      "name": "Wooden Club",
+      "threatBonus": 1,
+      "requiresAmmo": false,
+      "craftable": true,
+      "craftCost": { "wood": 2 }
+    },
+    {
+      "id": "lead_pipe",
+      "name": "Lead Pipe",
+      "threatBonus": 2,
+      "requiresAmmo": false,
+      "craftable": true,
+      "craftCost": { "metal": 2 }
+    },
+    {
+      "id": "sawbat",
+      "name": "Saw Bat",
+      "threatBonus": 2,
+      "requiresAmmo": false,
+      "craftable": true,
+      "craftCost": { "wood": 2, "metal": 1 }
+    },
+    {
+      "id": "pipe_gun",
+      "name": "Pipe Gun",
+      "threatBonus": 4,
+      "requiresAmmo": true,
+      "craftable": true,
+      "craftCost": { "metal": 8 }
+    },
+    {
+      "id": "handgun",
+      "name": "Colt 45",
+      "threatBonus": 3,
+      "requiresAmmo": true,
+      "craftable": false
+    },
+    {
+      "id": "snubnose",
+      "name": "Snubnose",
+      "threatBonus": 3,
+      "requiresAmmo": true,
+      "craftable": false
+    },
+    {
+      "id": "rifle",
+      "name": "Rifle",
+      "threatBonus": 5,
+      "requiresAmmo": true,
+      "craftable": false
+    }
+  ],
+  "equipment": [
+    {
+      "id": "backpack",
+      "name": "Backpack",
+      "extraSlots": 2,
+      "consumable": false,
+      "craftable": true,
+      "craftCost": { "wood": 4 },
+      "effect": "Grants +2 item slots (net +1 usable since backpack fills one)"
+    },
+    {
+      "id": "hand_cart",
+      "name": "Hand Cart",
+      "extraSlots": 3,
+      "consumable": false,
+      "craftable": true,
+      "craftCost": { "wood": 6 },
+      "effect": "Grants +3 item slots (net +2 usable since cart fills one). Occupies both hands — survivor cannot wield a weapon."
+    },
+    {
+      "id": "armor",
+      "name": "Armor",
+      "extraSlots": 0,
+      "consumable": true,
+      "craftable": true,
+      "craftCost": { "metal": 4 },
+      "effect": "Absorbs 1 damage from a conflict loss (consumed on use)"
+    },
+    {
+      "id": "radio",
+      "name": "Radio",
+      "extraSlots": 0,
+      "consumable": false,
+      "craftable": true,
+      "craftCost": { "metal": 10 },
+      "effect": "Allows a survivor to change location after intent declaration (not yet implemented)"
+    },
+    {
+      "id": "jammer",
+      "name": "Jammer",
+      "extraSlots": 0,
+      "consumable": true,
+      "craftable": true,
+      "craftCost": { "metal": 3 },
+      "effect": "Block target player's Electric Fence Alarm this round (consumed on use)"
+    },
+    {
+      "id": "flashlight",
+      "name": "Flashlight",
+      "extraSlots": 1,
+      "consumable": false,
+      "craftable": true,
+      "craftCost": { "metal": 2, "wood": 1 },
+      "effect": "Reveals 1 extra card when scavenging. Does not occupy an item slot (net 0 slot cost)."
+    }
+  ],
+  "structures": [
+    {
+      "id": "bunk",
+      "name": "Bunk",
+      "compoundThreatBonus": 0,
+      "craftCost": { "wood": 2 },
+      "effect": "Increases compound capacity by 1 (vestigial — will gate survivor acquisition in a future update)"
+    },
+    {
+      "id": "spike_trap",
+      "name": "Spike Trap",
+      "compoundThreatBonus": 2,
+      "craftCost": { "wood": 3 }
+    },
+    {
+      "id": "spring_trap",
+      "name": "Spring Trap",
+      "compoundThreatBonus": 2,
+      "craftCost": { "metal": 2 }
+    },
+    {
+      "id": "ramparts",
+      "name": "Ramparts",
+      "compoundThreatBonus": 3,
+      "craftCost": { "wood": 5 }
+    },
+    {
+      "id": "electric_fence_alarm",
+      "name": "Electric Fence Alarm",
+      "compoundThreatBonus": 2,
+      "craftCost": { "metal": 5 },
+      "effect": "Wakes resting survivors — they contribute their threat to defense (can be jammed)",
+      "wakesRestingSurvivors": true
+    },
+    {
+      "id": "rain_catch",
+      "name": "Rain Catch",
+      "compoundThreatBonus": 0,
+      "craftCost": { "wood": 1, "metal": 1 },
+      "effect": "Generates +1 water every 2 rounds",
+      "generates": { "resource": "water", "amount": 1, "everyNRounds": 2 }
+    },
+    {
+      "id": "small_garden",
+      "name": "Small Garden",
+      "compoundThreatBonus": 0,
+      "craftCost": { "wood": 2, "food": 1 },
+      "effect": "Generates +1 food every 3 rounds",
+      "generates": { "resource": "food", "amount": 1, "everyNRounds": 3 }
+    }
+  ]
+}

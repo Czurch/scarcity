@@ -1,0 +1,29 @@
+{
+  "name": "scarcity-simulator",
+  "version": "0.1.0",
+  "description": "CLI simulator for the Scarcity board game",
+  "main": "dist/cli/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/cli/index.ts",
+    "autodraft": "ts-node src/cli/index.ts --autodraft",
+    "sim": "ts-node src/cli/index.ts --sim",
+    "sim-strats": "ts-node src/cli/index.ts --sim-strats",
+    "server": "ts-node src/server/index.ts",
+    "play": "ts-node src/server/play-vs-rl.ts",
+    "web-server": "ts-node src/server/web-server.ts",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.18.1",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.21.0"
+  }
+}
